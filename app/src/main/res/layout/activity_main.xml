@@ -19,4 +19,45 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.075" />
 
+    <Button
+        android:id="@+id/correctBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="correct"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/incorrectBtn"
+        app:layout_constraintHorizontal_bias="0.303"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/wordToTest"
+        app:layout_constraintVertical_bias="0.924" />
+
+    <Button
+        android:id="@+id/incorrectBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="56dp"
+        android:text="incorrect"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.932" />
+
+    <Button
+        android:id="@+id/black_hole"
+
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:background="@drawable/custom_black_hole"
+
+        android:scrollbarDefaultDelayBeforeFade="400"
+        android:text=""
+        android:textColor="#FFFFFF"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.51"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.8" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

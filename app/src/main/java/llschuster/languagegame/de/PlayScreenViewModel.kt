@@ -13,7 +13,7 @@ import kotlin.random.Random
 
 class PlayScreenViewModel: ViewModel() {
     var isGameStarted = MutableLiveData<Boolean>(false)
-    var gameScore = MutableLiveData<Int>()
+    var gameScore = MutableLiveData<Int>(0)
     var playerLifes = MutableLiveData<Int>()
     var listOfWords = MutableLiveData<List<WordModel>>()
     var currentWord = MutableLiveData<WordModel>()
@@ -62,6 +62,23 @@ class PlayScreenViewModel: ViewModel() {
                 index, _ ->
                 index != rndIndex
         }
+    }
+
+    fun confirmMatch(): Boolean{
+        if (currentWord.value!!.translation == currentSolution.value!!.translation){
+            gameScore.value = gameScore.value?.plus(1)
+            return true
+        }
+        gameScore.value = gameScore.value?.minus(1)
+        return false
+    }
+
+    fun denyMatch(): Boolean{
+        if (currentWord.value!!.translation != currentSolution.value!!.translation){
+            return true
+        }
+        gameScore.value = gameScore.value?.minus(1)
+        return false
     }
 
     fun readJsonFromAsset(): String? {

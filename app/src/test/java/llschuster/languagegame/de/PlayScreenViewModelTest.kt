@@ -1,11 +1,11 @@
 package llschuster.languagegame.de
 
-import android.app.ActivityManager
 import android.app.Application
 import android.os.Build
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import llschuster.languagegame.de.viewmodels.PlayScreenViewModel
 import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
@@ -22,7 +22,8 @@ class PlayScreenViewModelTest {
     fun startNewRound_shouldGenerate_new_word_and_possible_solutions(){
         var app = ApplicationProvider.getApplicationContext<Application>()
 
-        var playScreenViewModel = PlayScreenViewModel()
+        var playScreenViewModel =
+            PlayScreenViewModel()
         playScreenViewModel.wordListInputStream = app.assets.open("words_v2.json")
         playScreenViewModel.getListOfWords()
 
@@ -38,7 +39,8 @@ class PlayScreenViewModelTest {
     fun getListOfWords_shouldLoadWordsFromJsonData(){
         var app = ApplicationProvider.getApplicationContext<Application>()
 
-        var playScreenViewModel = PlayScreenViewModel()
+        var playScreenViewModel =
+            PlayScreenViewModel()
         playScreenViewModel.wordListInputStream = app.assets.open("words_v2.json")
         playScreenViewModel.getListOfWords()
 

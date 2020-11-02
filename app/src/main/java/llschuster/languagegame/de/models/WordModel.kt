@@ -1,4 +1,4 @@
-package llschuster.languagegame.de
+package llschuster.languagegame.de.models
 
 import com.google.gson.annotations.SerializedName
 

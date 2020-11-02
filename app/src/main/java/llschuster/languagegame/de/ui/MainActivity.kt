@@ -1,7 +1,8 @@
-package llschuster.languagegame.de
+package llschuster.languagegame.de.ui
 
 import android.animation.Animator
 import android.animation.ObjectAnimator
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.Point
 import androidx.appcompat.app.AppCompatActivity
@@ -17,13 +18,10 @@ import androidx.activity.viewModels
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.lifecycle.observe
+import llschuster.languagegame.de.viewmodels.PlayScreenViewModel
+import llschuster.languagegame.de.R
+import llschuster.languagegame.de.utils.DecisionOutcomeType
 import java.lang.Exception
-
-enum class DecisionOutcomeType {
-    skip,
-    match,
-    ignore
-}
 
 class MainActivity : AppCompatActivity() {
     lateinit var mainLayout: ConstraintLayout
@@ -34,12 +32,15 @@ class MainActivity : AppCompatActivity() {
     lateinit var gameScoreTxt: TextView
     lateinit var feedbackTxt: TextView
     var displaySize: Point = Point()
-    val playScreenViewModel: PlayScreenViewModel by viewModels()
     var animationFinalValue = 800f
     var animatedWord: AnimatedComponent? = null
     var decision= DecisionOutcomeType.ignore
+    var playLock: Boolean = false
 
+    val playScreenViewModel: PlayScreenViewModel by viewModels()
 
+    // onDecision is triggered on the end of a falling answer animation
+    // and it decides if should render the next answer or start a complete new round
     fun onDecision(){
         mainLayout?.removeView(animatedWord?.viewToAnimate)
         when{
@@ -52,20 +53,24 @@ class MainActivity : AppCompatActivity() {
                 decision = DecisionOutcomeType.ignore
             }
             decision == DecisionOutcomeType.ignore -> {
-                playScreenViewModel.denyMatch()
+                playScreenViewModel.denyMatch()  // ignoring an answer is considered as denying it
                 playScreenViewModel.getNextSolution()
             }
         }
     }
 
     fun renderNextWord(text: String){
-        var wordView: View = inflateWord(text) ?: return
-        animatedWord = AnimatedComponent(wordView, endAnimationCallback = {onDecision()} ,
-            animateTo = animationFinalValue, startAnimationCallback = {startTimeOutBar()})
+        var wordView: View = renderAnswer(text) ?: return
+        animatedWord = AnimatedComponent(
+            wordView,
+            endAnimationCallback = { onDecision() },
+            animateTo = animationFinalValue,
+            startAnimationCallback = { startTimeOutBar() })
         animatedWord?.objectAnim?.start()
     }
 
     fun startTimeOutBar(){
+        playLock = false
         var animatedProgressBar = ObjectAnimator.ofInt(progressBar, "progress", 100, 0).apply {
             this.duration = 4800
         }
@@ -99,7 +104,7 @@ class MainActivity : AppCompatActivity() {
         animatedFeebackTxt.start()
     }
 
-    fun inflateWord(text: String): View?{
+    fun renderAnswer(text: String): View?{
         try {
             if (mainLayout != null){
                 val newTextView = TextView(this)
@@ -148,44 +153,71 @@ class MainActivity : AppCompatActivity() {
         progressBar = findViewById(R.id.progressBar)
 
         confirmBtn.setOnClickListener {
-            var confirmResult = playScreenViewModel.confirmMatch()
-            decision = if (confirmResult) DecisionOutcomeType.match else DecisionOutcomeType.skip
-            var feedbackText = if (confirmResult) "Well done" else "Bad luck"
-            var feedbackColor = if (confirmResult) Color.GREEN else Color.RED
-            animateFeedback(feedbackText, feedbackColor)
-            animatedWord?.objectAnim?.cancel()
+            if (!playLock) {
+                playLock = true
+
+                var confirmResult = playScreenViewModel.confirmMatch()
+                decision =
+                    if (confirmResult) DecisionOutcomeType.match else DecisionOutcomeType.skip
+
+                var feedbackText = if (confirmResult) "Well done" else "Bad luck"
+                var feedbackColor = if (confirmResult) Color.GREEN else Color.RED
+                animateFeedback(feedbackText, feedbackColor)
+
+                animatedWord?.objectAnim?.cancel()
+            }
         }
 
         denyBtn.setOnClickListener {
             try {
-                var denyResult = playScreenViewModel.denyMatch()
-                decision = if (!denyResult) DecisionOutcomeType.match else DecisionOutcomeType.skip
-                if (!denyResult) animateFeedback("That was actually right", Color.RED)
-                animatedWord?.objectAnim?.cancel()
+                if (!playLock){
+                    playLock = true
+
+                    var denyResult = playScreenViewModel.denyMatch()
+                    decision = if (!denyResult) DecisionOutcomeType.match else DecisionOutcomeType.skip
+                    if (!denyResult) animateFeedback("That was actually right", Color.RED)
+
+                    animatedWord?.objectAnim?.cancel()
+                }
             } catch (e: Exception){
                 Log.i("error", e.toString())
             }
         }
 
         windowManager.defaultDisplay.getSize(displaySize)
-        animationFinalValue = displaySize.y * 1.05f
+        animationFinalValue = displaySize.y * 1.05f //animate until little further than screen size
 
         playScreenViewModel.wordListInputStream = assets.open("words_v2.json")
-        playScreenViewModel.getListOfWords()
+        playScreenViewModel.startGame()
+
         playScreenViewModel.isGameStarted.observe(this) {
             when{
                 it == false -> Toast.makeText(this@MainActivity, "Loading", Toast.LENGTH_SHORT).show()
                 else -> Toast.makeText(this@MainActivity, "started", Toast.LENGTH_SHORT).show()
             }
         }
+
+        playScreenViewModel.listOfWords.observe(this){
+            if (it.size >= 1) playScreenViewModel.startNewRound()
+        }
+
         playScreenViewModel.currentWord.observe(this){
             wordToTest.setText(it.original)
         }
+
         playScreenViewModel.currentSolution.observe(this){
             renderNextWord(it.translation)
         }
+
         playScreenViewModel.gameScore.observe(this) {
             gameScoreTxt.setText(it.toString())
+        }
+
+        playScreenViewModel.isGameOver.observe(this){
+            if (it){
+                var endScreen = Intent(this, GameEnd::class.java)
+                startActivity(endScreen)
+            }
         }
     }
 }

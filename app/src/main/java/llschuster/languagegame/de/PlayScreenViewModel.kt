@@ -37,10 +37,10 @@ class PlayScreenViewModel: ViewModel() {
         val listType: Type = object : TypeToken<List<WordModel>>() {}.type
         var resultList = Gson().fromJson<List<WordModel>>(jsonFile, listType)
         listOfWords.value = resultList
-        getRandomWord()
+        startNewRound()
     }
 
-    fun getRandomWord() {
+    fun startNewRound() {
         if (listOfWords?.value == null) return
         var rndIndex = Random.nextInt(0, listOfWords.value!!.size)
         possibleSolutions.value = List<WordModel>(SIZE_OF_SOLUTIONS_LIST) {
@@ -55,7 +55,7 @@ class PlayScreenViewModel: ViewModel() {
     }
 
     fun getNextSolution(){
-        if (possibleSolutions?.value == null || possibleSolutions?.value!!.size <= 0) return getRandomWord()
+        if (possibleSolutions?.value == null || possibleSolutions?.value!!.size <= 0) return startNewRound()
         val rndIndex = Random.nextInt(0, possibleSolutions.value!!.size)
         currentSolution.value = possibleSolutions.value!![rndIndex]
         possibleSolutions.value = possibleSolutions.value!!.filterIndexed {

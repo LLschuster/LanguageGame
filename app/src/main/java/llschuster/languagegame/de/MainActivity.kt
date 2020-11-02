@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var gameScoreTxt: TextView
     lateinit var feedbackTxt: TextView
     var displaySize: Point = Point()
-    private val playScreenViewModel: PlayScreenViewModel by viewModels()
+    val playScreenViewModel: PlayScreenViewModel by viewModels()
     var animationFinalValue = 800f
     var animatedWord: AnimatedComponent? = null
     var decision= DecisionOutcomeType.ignore
@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity() {
         mainLayout?.removeView(animatedWord?.viewToAnimate)
         when{
             decision == DecisionOutcomeType.match -> {
-                playScreenViewModel.getRandomWord()
+                playScreenViewModel.startNewRound()
                 decision = DecisionOutcomeType.ignore
             }
             decision == DecisionOutcomeType.skip -> {
